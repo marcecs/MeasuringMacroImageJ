@@ -1,0 +1,87 @@
+run("Set Measurements...", "area perimeter shape descriptors Display label");
+n = nSlices;
+area1 = newArray(n);
+length1 = newArray(n);
+area2 = newArray(n);
+length2 = newArray(n);
+AR = newArray(n);
+Circ = newArray(n);
+label = newArray(n);
+Round =  newArray(n);
+Solid = newArray(n);
+
+for (i=1; i<=nSlices; i++) {
+  setSlice(i);
+  run("Create Selection");
+  j = i-1;
+  type = selectionType(); 
+
+  if (type == 4){
+    run("Measure");
+    area1[j] = getResult("Area");
+    length1[j] = getResult("Perim.");
+    AR[j] = getResult("AR");
+    Circ[j] = getResult("Circ.");
+    Round[j] = getResult("Round");
+    label[j] = getInfo("slice.label");
+    Solid[j] = getResult("Solidity");
+    run("Clear Results");
+
+    run("Convex Hull");
+    run("Measure");
+    area2[j] = getResult('Area');
+    length2[j] = getResult('Perim.');
+    run("Select None");
+    run("Clear Results");
+
+  } else {
+    run("Analyze Particles...", "clear add");
+    
+    for (cpt=0, max=0, ind = 0; cpt<nResults(); cpt++)
+    {
+      if (getResult("Area", cpt) > max)
+      {
+        max = getResult("Area", cpt);
+        ind = cpt;
+      }
+    }
+    roiManager("Select", ind);
+    run("Measure");
+    area1[j] = getResult("Area");
+    length1[j] = getResult("Perim.");
+    AR[j] = getResult("AR");
+    Circ[j] = getResult("Circ.");
+    Round[j] = getResult("Round");
+    label[j] = getInfo("slice.label");
+    Solid[j] = getResult("Solidity");
+    run("Clear Results");
+
+    run("Convex Hull");
+    run("Measure");
+    area2[j] = getResult('Area');
+    length2[j] = getResult('Perim.');
+    }
+  
+}
+
+for (c=0; c<n; c++) {
+  setResult("Label", c, label[c]);
+  setResult("Area", c, area1[c]);
+  setResult("Perim.", c, length1[c]);
+  setResult("Circ", c, Circ[c]);
+  setResult("AR", c, AR[c]);
+  setResult("CH Area", c, area2[c]);
+  setResult("CH Perim.", c, length2[c]);
+  if (area1[c] == NaN){
+      setResult("Solidarity", c, NaN);
+      setResult("Convexity", c, NaN);
+    } else {
+      setResult("Solidarity", c, area1[c]/area2[c]);
+      setResult("Convexity", c, length2[c]/length1[c]);
+    }
+
+  setResult("Solid",c,Solid[c]);
+  setResult("Round", c, Round[c]);
+}
+
+
